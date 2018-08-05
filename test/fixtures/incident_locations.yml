@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  incident: one
+  location: 1
+  other_location: MyString
+
+two:
+  incident: two
+  location: 1
+  other_location: MyString

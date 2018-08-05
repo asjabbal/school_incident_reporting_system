@@ -1,0 +1,125 @@
+<%= form_with(model: incident, local: true, html: {multipart: true}) do |form| %>
+  <% if incident.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(incident.errors.count, "error") %> prohibited this incident from being saved:</h2>
+
+      <ul>
+      <% incident.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%if @detailed_form%>
+    <div class="field">
+      <span>Select type of incident:-</span>
+      <br>
+
+      <%IncidentKind::KINDS.each_with_index {|e, i|%>
+        <%= form.fields_for :incident_kinds, IncidentKind.new, {child_index: i} do |f|%>
+          <%#= f.collection_check_boxes  :kind, [[e]], :first, :last%>
+          <span style="width: 5%; float: left;">
+            <%= f.check_box :kind, {}, e, nil%>
+            <%= f.label :kind, get_incident_kind_name(e)%>
+          </span>
+        <%end%>
+      <%}%>
+    </div>
+
+    <div class="field">
+      <span>Your details:-</span>
+      <br>
+      <%= check_box_tag :anonymous%>
+      <%= label_tag :anonymous, "Report anonymously"%>
+
+
+      <%= form.fields_for :user_detail, UserDetail.new do |f|%>
+        <%= f.label :name%>
+        <%= f.text_field :name, data: {field: "user_detail"}%>
+
+        <%= f.label :contact_info%>
+        <%= f.text_field :contact_info, data: {field: "user_detail"}%>
+
+        <%= f.label :role, "Role:" %>
+        <%= f.select :role, UserDetail::ROLES.map{|e| [get_user_role_name(e), e] }, {}, {data: {field: "user_detail"}} %>
+      <%end%>
+    </div>
+
+    <div class="field">
+      <%= form.fields_for :incident_location, IncidentLocation.new do |f|%>
+        <%= f.label :location, "Location (select or provide details in other):" %>
+        <%= f.select :location, IncidentLocation::LOCATIONS.map{|e| [get_location_name(e), e] }, {} %>
+
+        <%= f.label :other_location, "Other location", data: {field: "location"}%>
+        <%= f.text_field :other_location, data: {field: "location"}%>
+      <%end%>
+    </div>
+
+    <div class="field">
+      <%= form.label :suspect_info, "People involved:" %>
+      <%= form.text_area :suspect_info %>
+    </div>
+
+    <div class="field">
+      <%= form.label :witness_info, "Other observers if any:" %>
+      <%= form.text_area :witness_info %>
+    </div>
+
+    <div class="field">
+      <%= form.label :occurred_at %>
+      <%= form.datetime_select :occurred_at %>
+    </div>
+  <%end%>
+
+  <div class="field">
+    <%= form.label :description, "Incident description:" %>
+    <%= form.text_area :description %>
+  </div>
+
+  <div class="field">
+    <%= form.fields_for :incident_files, IncidentFile.new do |f|%>
+      <%= f.label :document, "Attach files (select multiple by holding Ctrl when dialog box opens):" %>
+      <%= f.file_field :document, {multiple: true} %>
+    <%end%>
+  </div>
+
+  <div class="field">
+    <%= hidden_field_tag 'ft', params[:ft]%>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>
+
+<%if @detailed_form%>
+  <%= link_to "Click here for simple form", new_incident_path%>
+<%else%>
+  <%= link_to "Click here for detailed form", new_incident_path(ft: "detail")%>
+<%end%>
+
+
+<script type="text/javascript">
+
+  $("[data-field='location']").hide();
+  $("#incident_incident_location_attributes_location").on("change", function(e){
+    if($(this).val() == "other"){
+      $("[data-field='location']").show();
+    }else{
+      $("[data-field='location']").val("").hide();
+    }
+  });
+
+
+  $("#anonymous").on("change", function(e){
+    if($(this).is(":checked")){
+      $("[data-field='user_detail']").prop("disabled", true);
+      $("input[data-field='user_detail']").val("");
+      $("select[data-field='user_detail']").val("student");
+    }else{
+      $("[data-field='user_detail']").prop("disabled", false);
+    }
+  });
+
+</script>
